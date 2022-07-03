@@ -1,29 +1,65 @@
-# CSV.foreach('/tmp/habrasalary.csv', :headers => true) do |row|
-#   row["id"]==
-# end
-# Moscow Softwaredev Fullstack Backend Frontend Junior Middle Ruby Rubyonrails Javascript React
-# 1      0.25        1         0.5     0.5      0.5    0.5    0.2  0.3         0.2        0.3
-#                                                              \0.5/               \0.5/
-# max: 4
-#
-# by categories average values for the date are average of values with modifiers
-# (all*3.5/4+allminusmoscow*2.5/4+moscow*1/4)/(7/4)
-# in case of junior and middle (with other categories being the same) => direct average between these values
-#
-# needed all 5 data points: 10, 25, 50, 75, 90 percentiles
-#
-# by dates:
-# 2022.2 2022.1 2021.2 2021.1 2020.2 2020.1 2019.2 2019.1 2018.2 2018.1 etc
-# 1      1/2    1/4    1/8    1/16   1/32   1/64   1/128  1/256  1/512
-# these are modifiers for the difference not for the rmss
-# https://www.varsitytutors.com/hotmath/hotmath_help/topics/line-of-best-fit
-# for the data from all time period - use it as the data point for the average of time range
-#
-# some measurement of number of answers?
-# like additional modifier of number of candidates for current answer divided by overall
-#
-#
-# options_num = 11
-# (2 ** options_num).times do |index|
-#   puts index.to_s(2).rjust(options_num, "0")
-# end
+require 'csv'
+
+modifiers_sum = 0
+pct10_sum, pct25_sum, pct50_sum, pct75_sum, pct90_sum = 0, 0, 0, 0, 0
+p_modifiers = [221, 212, 211, 202, 201, 192, 191, 182, 181, 172]
+s_modifiers = {
+  nil => 0.5,
+  "4" => 1,
+  "2" => 0.75,
+  "3" => 0.75
+}
+q_modifiers = {
+  nil => 0.5,
+  "3" => 0.75,
+  "4" => 0.75
+}
+city_modifiers = {
+  nil => 0.5,
+  "678" => 1
+}
+skills_modifiers = {
+  "1080" => 0.125,
+  "1081" => 0.125,
+  "1070" => 0.125,
+  "264" => 0.125,
+}
+
+(p_modifiers + [0]).reverse.each do |p_modifier|
+  CSV.foreach('salaries.csv', :headers => true) do |row|
+    if row["pct10"] == "0" && row["pct25"] == "0" && row["pct50"] == "0" && row["pct75"] == "0" && row["pct90"] == "0" || row["p"] != p_modifier.to_s
+      # puts "lol"
+    else
+      modifier = 1.0
+      if row["p"] != "0"
+        modifier /= 2 ** p_modifiers.find_index(row["p"].to_i)
+      else
+        modifier /= 2 ** (p_modifiers.length / 2.0)
+      end
+      modifier *= s_modifiers[row["s"]]
+      modifier *= q_modifiers[row["q"]]
+      modifier *= city_modifiers[row["city"]]
+      modifier *= (0.5 +
+        skills_modifiers[row["skill1"]].to_i +
+        skills_modifiers[row["skill2"]].to_i +
+        skills_modifiers[row["skill3"]].to_i)
+      modifiers_sum += modifier
+      pct10_sum += row["pct10"].to_i * modifier
+      pct25_sum += row["pct25"].to_i * modifier
+      pct50_sum += row["pct50"].to_i * modifier
+      pct75_sum += row["pct75"].to_i * modifier
+      pct90_sum += row["pct90"].to_i * modifier
+      # print([(pct10_sum / modifiers_sum).round,
+      #        (pct25_sum / modifiers_sum).round,
+      #        (pct50_sum / modifiers_sum).round,
+      #        (pct75_sum / modifiers_sum).round,
+      #        (pct90_sum / modifiers_sum).round], "\n")
+    end
+  end
+
+  print([p_modifier, ": ", (pct10_sum / modifiers_sum).round,
+         (pct25_sum / modifiers_sum).round,
+         (pct50_sum / modifiers_sum).round,
+         (pct75_sum / modifiers_sum).round,
+         (pct90_sum / modifiers_sum).round], "\n")
+end
