@@ -6,6 +6,8 @@ CSV.open("salaries.csv", "w") do |csv|
   options = Selenium::WebDriver::Chrome::Options.new
   options.add_argument('--host-resolver-rules=MAP connect.facebook.net 127.0.0.1')
   options.add_argument('--headless')
+  options.add_argument('--ignore-certificate-errors')
+  options.add_argument('--ignore-ssl-errors')
   driver = Selenium::WebDriver.for :chrome, options: options
 
   # report period
