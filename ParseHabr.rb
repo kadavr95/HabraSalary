@@ -9,8 +9,7 @@ CSV.open("salaries.csv", "w") do |csv|
   driver = Selenium::WebDriver.for :chrome, options: options
 
   # report period
-  # periods = [0, 172, 181, 182, 191, 192, 201, 202, 211, 212, 221, 222] # all data then detailed in format is YY.halfYear
-  periods = [0, 172, 181, 182, 191, 192, 201, 202, 211, 212, 221] # all data then detailed in format is YY.halfYear
+  periods = [0, 172, 181, 182, 191, 192, 201, 202, 211, 212, 221, 222, 231] # all data then detailed in format is YY.halfYear
   # specialization
   specializations = [nil, 4, 2, 3] # [full-stack, backend, frontend]
   # qualifications
